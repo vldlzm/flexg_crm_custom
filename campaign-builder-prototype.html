@@ -70,9 +70,8 @@
   .nav-item:hover{ background:#f3f4f6; }
   .nav-item.locked{
     color:var(--text-faint);
-    cursor:not-allowed;
   }
-  .nav-item.locked:hover{ background:none; }
+  .nav-item.locked:hover{ background:#f3f4f6; }
   .nav-item.active{
     background:#eef2ff;
     color:var(--accent);
@@ -1177,7 +1176,7 @@
 
   function navClick(n){
     const card = cardEl(n);
-    if(card.classList.contains('locked')) return;
+    card.classList.remove('locked');
     if(!card.classList.contains('open')) card.classList.add('open');
     refreshNavStates();
     card.scrollIntoView({behavior:'smooth', block:'start'});
