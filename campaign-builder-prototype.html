@@ -160,6 +160,14 @@
     font-size:15px;
     font-weight:700;
   }
+  .step-optional-tag{
+    font-size:11px;
+    font-weight:700;
+    color:var(--text-muted);
+    background:#f0f1f3;
+    border-radius:999px;
+    padding:2px 9px;
+  }
   .step-header-right{
     display:flex;
     align-items:center;
@@ -380,6 +388,38 @@
     gap:8px;
   }
   .discount-on{ color:var(--success); font-weight:700; font-size:13px; }
+  .switch{
+    position:relative;
+    display:inline-block;
+    width:38px;
+    height:21px;
+    vertical-align:middle;
+    margin-right:8px;
+  }
+  .switch input{ opacity:0; width:0; height:0; }
+  .switch-slider{
+    position:absolute;
+    inset:0;
+    background:#d1d5db;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .switch-slider::before{
+    content:"";
+    position:absolute;
+    height:15px;
+    width:15px;
+    left:3px;
+    top:3px;
+    background:#fff;
+    border-radius:50%;
+    transition:transform .15s;
+  }
+  .switch input:checked + .switch-slider{ background:var(--success); }
+  .switch input:checked + .switch-slider::before{ transform:translateX(17px); }
+  .discount-fields{ transition:opacity .15s; }
+  .discount-fields.is-off{ opacity:.45; pointer-events:none; }
   .discount-code-row, .discount-kind-row{
     display:flex;
     align-items:center;
@@ -852,6 +892,7 @@
           <div class="step-header-left">
             <span class="step-num-badge">3</span>
             <span class="step-title">혜택 설정</span>
+            <span class="step-optional-tag">선택</span>
           </div>
           <div class="step-header-right">
             <span class="step-summary" id="summary3"></span>
@@ -876,64 +917,70 @@
 
             <div class="discount-row">
               <div class="discount-label">사용여부</div>
-              <div class="discount-value">
-                <span class="discount-on">ON</span>
+              <div class="discount-value" style="flex-direction:row; align-items:center;">
+                <label class="switch">
+                  <input type="checkbox" id="discountEnabledToggle" checked onchange="onDiscountEnabledChange()">
+                  <span class="switch-slider"></span>
+                </label>
+                <span class="discount-on" id="discountEnabledLabel">ON</span>
               </div>
             </div>
 
-            <div class="discount-row">
-              <div class="discount-label"><span class="req-check">✓</span> 할인코드</div>
-              <div class="discount-value">
-                <div class="discount-code-row">
-                  <input type="text" class="discount-input" id="discountCodeInput" maxlength="16" placeholder="할인코드 입력" oninput="onDiscountCodeInput()">
-                  <span class="char-count" id="discountCodeCount">0/16</span>
-                  <span class="helper-text">ⓘ 특수기호와 공백을 포함할 수 없습니다.</span>
+            <div class="discount-fields" id="discountFields">
+              <div class="discount-row">
+                <div class="discount-label"><span class="req-check">✓</span> 할인코드</div>
+                <div class="discount-value">
+                  <div class="discount-code-row">
+                    <input type="text" class="discount-input" id="discountCodeInput" maxlength="16" placeholder="할인코드 입력" oninput="onDiscountCodeInput()">
+                    <span class="char-count" id="discountCodeCount">0/16</span>
+                    <span class="helper-text">ⓘ 특수기호와 공백을 포함할 수 없습니다.</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="discount-row">
-              <div class="discount-label"><span class="req-check">✓</span> 할인종류</div>
-              <div class="discount-value">
-                <div class="discount-kind-row">
-                  <label class="inline-radio"><input type="radio" name="discountKind" value="amount" checked onchange="onDiscountKindChange()"> 금액 할인</label>
-                  <input type="number" class="discount-input small" id="discountAmountInput" placeholder="금액 입력" oninput="updateStep3Preview()"> <span>원</span>
-                  <label class="inline-radio"><input type="radio" name="discountKind" value="percent" onchange="onDiscountKindChange()"> 비율 할인</label>
-                  <input type="number" class="discount-input small" id="discountPercentInput" placeholder="할인율 입력" disabled oninput="updateStep3Preview()"> <span>%</span>
-                  <span class="max-label">최대 할인 금액</span>
-                  <input type="number" class="discount-input small" id="discountMaxInput" value="0" disabled oninput="updateStep3Preview()"> <span>원</span>
-                </div>
-                <div class="helper-text">ⓘ 비율 할인은 배송비를 제외한 총 상품 금액 기준입니다.</div>
-              </div>
-            </div>
-
-            <div class="discount-row">
-              <div class="discount-label">주문 금액 제한</div>
-              <div class="discount-value">
-                <div class="discount-code-row">
-                  <span class="max-label" style="margin-left:0;">최소 주문 금액</span>
-                  <input type="number" class="discount-input small" id="minOrderInput" value="0">
-                  <span>원</span>
-                  <span class="helper-text">ⓘ 주문 금액 제한은 배송비를 제외한 총 상품 금액 기준입니다.</span>
+              <div class="discount-row">
+                <div class="discount-label"><span class="req-check">✓</span> 할인종류</div>
+                <div class="discount-value">
+                  <div class="discount-kind-row">
+                    <label class="inline-radio"><input type="radio" name="discountKind" value="amount" checked onchange="onDiscountKindChange()"> 금액 할인</label>
+                    <input type="number" class="discount-input small" id="discountAmountInput" placeholder="금액 입력" oninput="updateStep3Preview()"> <span>원</span>
+                    <label class="inline-radio"><input type="radio" name="discountKind" value="percent" onchange="onDiscountKindChange()"> 비율 할인</label>
+                    <input type="number" class="discount-input small" id="discountPercentInput" placeholder="할인율 입력" disabled oninput="updateStep3Preview()"> <span>%</span>
+                    <span class="max-label">최대 할인 금액</span>
+                    <input type="number" class="discount-input small" id="discountMaxInput" value="0" disabled oninput="updateStep3Preview()"> <span>원</span>
+                  </div>
+                  <div class="helper-text">ⓘ 비율 할인은 배송비를 제외한 총 상품 금액 기준입니다.</div>
                 </div>
               </div>
-            </div>
 
-            <div class="discount-row">
-              <div class="discount-label"><span class="req-check">✓</span> 사용가능 환경</div>
-              <div class="discount-value">
-                <div class="inline-options">
-                  <label><input type="radio" name="discountEnv" value="전체" checked> 전체</label>
-                  <label><input type="radio" name="discountEnv" value="APP"> APP</label>
-                  <label><input type="radio" name="discountEnv" value="Web"> Web(PC/Mobile)</label>
+              <div class="discount-row">
+                <div class="discount-label">주문 금액 제한</div>
+                <div class="discount-value">
+                  <div class="discount-code-row">
+                    <span class="max-label" style="margin-left:0;">최소 주문 금액</span>
+                    <input type="number" class="discount-input small" id="minOrderInput" value="0">
+                    <span>원</span>
+                    <span class="helper-text">ⓘ 주문 금액 제한은 배송비를 제외한 총 상품 금액 기준입니다.</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="discount-row no-border">
-              <div class="discount-label">메모</div>
-              <div class="discount-value">
-                <textarea class="discount-textarea" id="discountMemo" placeholder="메모 입력"></textarea>
+              <div class="discount-row">
+                <div class="discount-label"><span class="req-check">✓</span> 사용가능 환경</div>
+                <div class="discount-value">
+                  <div class="inline-options">
+                    <label><input type="radio" name="discountEnv" value="전체" checked> 전체</label>
+                    <label><input type="radio" name="discountEnv" value="APP"> APP</label>
+                    <label><input type="radio" name="discountEnv" value="Web"> Web(PC/Mobile)</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="discount-row no-border">
+                <div class="discount-label">메모</div>
+                <div class="discount-value">
+                  <textarea class="discount-textarea" id="discountMemo" placeholder="메모 입력"></textarea>
+                </div>
               </div>
             </div>
 
@@ -1189,6 +1236,13 @@
   }
 
   /* ===== Step 3 ===== */
+  function onDiscountEnabledChange(){
+    const enabled = document.getElementById('discountEnabledToggle').checked;
+    document.getElementById('discountEnabledLabel').textContent = enabled ? 'ON' : 'OFF';
+    document.getElementById('discountFields').classList.toggle('is-off', !enabled);
+    updateStep3Preview();
+  }
+
   function onDiscountCodeInput(){
     const input = document.getElementById('discountCodeInput');
     input.value = input.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 16);
@@ -1205,17 +1259,20 @@
   }
 
   function updateStep3Preview(){
+    const enabled = document.getElementById('discountEnabledToggle').checked;
     const kind = document.querySelector('input[name=discountKind]:checked').value;
     benefit.type = kind === 'percent' ? 'percent' : 'amount';
     benefit.value = kind === 'percent'
       ? (document.getElementById('discountPercentInput').value || 0)
       : (document.getElementById('discountAmountInput').value || 0);
     benefit.code = document.getElementById('discountCodeInput').value;
-    benefit.created = benefit.code !== '';
+    benefit.created = enabled && benefit.code !== '';
     updatePreview();
   }
 
   function resetDiscountForm(){
+    document.getElementById('discountEnabledToggle').checked = true;
+    onDiscountEnabledChange();
     document.querySelector('input[name=discountType][value="CRM"]').checked = true;
     document.getElementById('discountCodeInput').value = '';
     document.getElementById('discountCodeCount').textContent = '0/16';
@@ -1233,9 +1290,13 @@
 
   function confirmStep3(){
     updateStep3Preview();
-    const summary = benefit.created
-      ? benefit.value + (benefit.type==='percent'?'%':'원') + ' 할인 · ' + benefit.code
-      : '혜택 미설정';
+    const enabled = document.getElementById('discountEnabledToggle').checked;
+    let summary = '혜택 미설정';
+    if(enabled){
+      summary = benefit.created
+        ? benefit.value + (benefit.type==='percent'?'%':'원') + ' 할인 · ' + benefit.code
+        : '혜택 사용(할인코드 미입력)';
+    }
     completeStep(3, summary);
   }
 
