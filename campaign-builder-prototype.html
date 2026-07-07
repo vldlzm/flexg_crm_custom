@@ -1002,7 +1002,7 @@
               <div class="field-row">
                 <span class="field-pill">노출 위치</span>
                 <div class="field-control">
-                  <select class="mini-input" id="popupPositionSelect" multiple style="min-width:220px; height:104px;" onchange="updatePreview()">
+                  <select class="mini-input" id="popupPositionSelect" style="min-width:210px;" onchange="updatePreview()">
                     <option value="처음 방문한 페이지">처음 방문한 페이지</option>
                     <option value="메인">메인</option>
                     <option value="상품 목록">상품 목록</option>
@@ -1304,15 +1304,14 @@
       badge.style.display = 'none';
     }
 
-    const checked = Array.from(document.getElementById('popupPositionSelect').selectedOptions).map(o=>o.value);
+    const position = document.getElementById('popupPositionSelect').value;
     const posWrap = document.getElementById('previewPositions');
-    posWrap.innerHTML = checked.map(p=>'<span class="pos-pill">'+p+'</span>').join('');
+    posWrap.innerHTML = position ? '<span class="pos-pill">'+position+'</span>' : '';
   }
 
   function confirmStep4(){
     const timingText = buildTimingSummary();
-    const positions = Array.from(document.getElementById('popupPositionSelect').selectedOptions).map(o=>o.value);
-    const posText = positions.length ? positions.join(', ') : '위치 미설정';
+    const posText = document.getElementById('popupPositionSelect').value || '위치 미설정';
     completeStep(4, timingText + ' · ' + posText);
   }
 
