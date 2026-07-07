@@ -985,7 +985,7 @@
             </div>
 
             <div class="discount-footer">
-              <button class="btn btn-light" onclick="resetDiscountForm()">취소</button>
+              <button class="btn btn-light" onclick="skipStep3()">취소</button>
               <button class="btn btn-dark" onclick="confirmStep3()">적용</button>
             </div>
           </div>
@@ -1298,6 +1298,13 @@
         : '혜택 사용(할인코드 미입력)';
     }
     completeStep(3, summary);
+  }
+
+  function skipStep3(){
+    resetDiscountForm();
+    document.getElementById('discountEnabledToggle').checked = false;
+    onDiscountEnabledChange();
+    completeStep(3, '혜택 미설정');
   }
 
   /* ===== Step 4 ===== */
