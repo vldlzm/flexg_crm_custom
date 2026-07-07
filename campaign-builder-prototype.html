@@ -993,18 +993,48 @@
               <div class="field-row">
                 <span class="field-pill">시점 및 조건</span>
                 <div class="field-control">
-                  <div class="inline-options">
-                    <label><input type="radio" name="popupTiming" value="immediate" checked onchange="onTimingChange()"> 즉시 노출</label>
-                    <label><input type="radio" name="popupTiming" value="elapsed" onchange="onTimingChange()"> 회원가입 후 경과일 기준</label>
-                  </div>
-                  <div class="inline-options" id="dayAfterFields" style="display:none">
-                    <input type="number" class="mini-input narrow" id="dayAfterInput" value="1" oninput="updatePreview()">
-                    <span>일차 이후</span>
-                    <select class="mini-input" id="dayAfterCondition" onchange="updatePreview()">
+                  <select class="mini-input" id="popupTimingSelect" style="width:230px;" onchange="onTimingChange()">
+                    <option value="immediate">즉시 노출</option>
+                    <option value="signup_elapsed">회원가입 후 경과일 기준</option>
+                    <option value="last_visit_elapsed">마지막 방문 후 경과일 기준</option>
+                    <option value="last_purchase_elapsed">마지막 구매 후 경과일 기준</option>
+                    <option value="cart_abandon">장바구니 담은 후 미구매 경과</option>
+                    <option value="visit_count">방문 횟수 기준</option>
+                    <option value="first_visit">첫 방문 시</option>
+                  </select>
+
+                  <div class="inline-options" id="timingSignup" style="display:none">
+                    <input type="number" class="mini-input narrow" id="signupDayInput" value="1" oninput="updatePreview()">
+                    <span>일 후</span>
+                    <select class="mini-input" id="signupCondition" onchange="updatePreview()">
                       <option value="visit">쇼핑몰 방문 시</option>
                       <option value="cart">장바구니 담은 후</option>
                       <option value="detail">상품 상세 조회 시</option>
                     </select>
+                  </div>
+
+                  <div class="inline-options" id="timingLastVisit" style="display:none">
+                    <input type="number" class="mini-input narrow" id="lastVisitDayInput" value="7" oninput="updatePreview()">
+                    <span>일 경과</span>
+                  </div>
+
+                  <div class="inline-options" id="timingLastPurchase" style="display:none">
+                    <input type="number" class="mini-input narrow" id="lastPurchaseDayInput" value="30" oninput="updatePreview()">
+                    <span>일 경과</span>
+                  </div>
+
+                  <div class="inline-options" id="timingCartAbandon" style="display:none">
+                    <input type="number" class="mini-input narrow" id="cartAbandonInput" value="1" oninput="updatePreview()">
+                    <select class="mini-input" id="cartAbandonUnit" onchange="updatePreview()">
+                      <option value="hour">시간</option>
+                      <option value="minute">분</option>
+                    </select>
+                    <span>경과</span>
+                  </div>
+
+                  <div class="inline-options" id="timingVisitCount" style="display:none">
+                    <input type="number" class="mini-input narrow" id="visitCountInput" value="3" oninput="updatePreview()">
+                    <span>회 이상 방문 시</span>
                   </div>
                 </div>
               </div>
@@ -1263,10 +1293,43 @@
   }
 
   /* ===== Step 4 ===== */
+  const timingPanelMap = {
+    signup_elapsed:'timingSignup',
+    last_visit_elapsed:'timingLastVisit',
+    last_purchase_elapsed:'timingLastPurchase',
+    cart_abandon:'timingCartAbandon',
+    visit_count:'timingVisitCount'
+  };
+
   function onTimingChange(){
-    const timing = document.querySelector('input[name=popupTiming]:checked').value;
-    document.getElementById('dayAfterFields').style.display = timing === 'elapsed' ? 'flex' : 'none';
+    const val = document.getElementById('popupTimingSelect').value;
+    Object.values(timingPanelMap).forEach(id=>{ document.getElementById(id).style.display = 'none'; });
+    if(timingPanelMap[val]) document.getElementById(timingPanelMap[val]).style.display = 'flex';
     updatePreview();
+  }
+
+  function buildTimingSummary(){
+    const val = document.getElementById('popupTimingSelect').value;
+    switch(val){
+      case 'immediate':
+        return '즉시 노출';
+      case 'signup_elapsed':
+        return '가입 후 ' + (document.getElementById('signupDayInput').value || 0) + '일';
+      case 'last_visit_elapsed':
+        return '마지막 방문 후 ' + (document.getElementById('lastVisitDayInput').value || 0) + '일 경과';
+      case 'last_purchase_elapsed':
+        return '마지막 구매 후 ' + (document.getElementById('lastPurchaseDayInput').value || 0) + '일 경과';
+      case 'cart_abandon': {
+        const unit = document.getElementById('cartAbandonUnit').value === 'hour' ? '시간' : '분';
+        return '장바구니 미구매 ' + (document.getElementById('cartAbandonInput').value || 0) + unit + ' 경과';
+      }
+      case 'visit_count':
+        return (document.getElementById('visitCountInput').value || 0) + '회 이상 방문 시';
+      case 'first_visit':
+        return '첫 방문 시';
+      default:
+        return '즉시 노출';
+    }
   }
 
   function onClickActionChange(){
@@ -1296,14 +1359,7 @@
   }
 
   function confirmStep4(){
-    const timing = document.querySelector('input[name=popupTiming]:checked').value;
-    let timingText;
-    if(timing === 'immediate'){
-      timingText = '즉시 노출';
-    } else {
-      const day = document.getElementById('dayAfterInput').value || 0;
-      timingText = '가입 후 ' + day + '일차';
-    }
+    const timingText = buildTimingSummary();
     const positions = Array.from(document.querySelectorAll('.position-tag input:checked')).map(cb=>cb.value);
     const posText = positions.length ? positions.join(', ') : '위치 미설정';
     completeStep(4, timingText + ' · ' + posText);
