@@ -590,6 +590,24 @@
     font-size:13px;
   }
 
+  /* ===== Summary bar ===== */
+  .summary-bar{
+    background:#f3f4f6;
+    border-radius:var(--radius);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    font-size:13px;
+    color:var(--text);
+  }
+  .summary-item{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+  .summary-icon{ font-size:14px; }
+  .summary-num{ color:var(--success); font-weight:800; }
+  .summary-divider{ color:var(--border); }
+
   /* ===== Publish bar ===== */
   .divider{
     border:none;
@@ -1124,6 +1142,14 @@
           </div>
         </div>
       </section>
+
+      <div class="summary-bar">
+        <span class="summary-item"><span class="summary-icon">🖥️</span>온사이트: 예상 노출 수 <span class="summary-num">0</span>명</span>
+        <span class="summary-divider">|</span>
+        <span class="summary-item"><span class="summary-icon">📨</span>오프사이트: 예약 발송 수 <span class="summary-num">0</span>건</span>
+        <span class="summary-divider">|</span>
+        <span class="summary-item">예상 지출 캐시 <span class="summary-num">0</span>c</span>
+      </div>
 
       <hr class="divider">
       <div class="publish-bar">
