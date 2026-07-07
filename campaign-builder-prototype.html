@@ -985,7 +985,8 @@
             </div>
 
             <div class="discount-footer">
-              <button class="btn btn-light" onclick="resetStep3Fields()">취소</button>
+              <button class="btn btn-outline" onclick="resetStep3Fields()">초기화</button>
+              <button class="btn btn-light" onclick="skipStep3()">건너뛰기</button>
               <button class="btn btn-dark" onclick="confirmStep3()">적용</button>
             </div>
           </div>
@@ -1298,6 +1299,12 @@
     document.querySelector('input[name=discountEnv][value="전체"]').checked = true;
     document.getElementById('discountMemo').value = '';
     updateStep3Preview();
+  }
+
+  function skipStep3(){
+    document.getElementById('discountEnabledToggle').checked = false;
+    onDiscountEnabledChange();
+    completeStep(3, '혜택 미설정');
   }
 
   /* ===== Step 4 ===== */
