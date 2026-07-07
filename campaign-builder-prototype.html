@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>캠페인 빌더 프로토타입</title>
+<style>
+  :root{
+    --bg:#f4f5f7;
+    --panel-bg:#ffffff;
+    --border:#e5e7eb;
+    --text:#1f2328;
+    --text-muted:#6b7280;
+    --text-faint:#9ca3af;
+    --accent:#4f46e5;
+    --accent-hover:#4338ca;
+    --success:#16a34a;
+    --dark-btn:#374151;
+    --dark-btn-hover:#1f2937;
+    --locked-bg:#fafafa;
+    --radius:12px;
+    --radius-sm:8px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-size:14px;
+  }
+  .app{
+    display:flex;
+    height:100vh;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    width:230px;
+    flex-shrink:0;
+    background:var(--panel-bg);
+    border-right:1px solid var(--border);
+    padding:20px 14px;
+    overflow-y:auto;
+  }
+  .sidebar-header{
+    font-size:15px;
+    font-weight:700;
+    padding:6px 10px 16px;
+    color:var(--text);
+  }
+  .nav-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 10px;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    color:var(--text-muted);
+    font-weight:500;
+    transition:background .15s, color .15s;
+  }
+  .nav-item:hover{ background:#f3f4f6; }
+  .nav-item.locked{
+    color:var(--text-faint);
+    cursor:not-allowed;
+  }
+  .nav-item.locked:hover{ background:none; }
+  .nav-item.active{
+    background:#eef2ff;
+    color:var(--accent);
+    font-weight:700;
+  }
+  .nav-item.done .nav-num{
+    background:var(--success);
+    color:#fff;
+  }
+  .nav-num{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:#e5e7eb;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .nav-item.active .nav-num{ background:var(--accent); }
+
+  /* ===== Content panel ===== */
+  .content-panel{
+    flex:1;
+    overflow-y:auto;
+    padding:32px 40px 120px;
+  }
+  .builder{
+    max-width:860px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  /* ===== Step card ===== */
+  .step-card{
+    background:var(--panel-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    transition:opacity .2s;
+  }
+  .step-card.locked{
+    opacity:.5;
+    pointer-events:none;
+    background:var(--locked-bg);
+  }
+  .step-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 22px;
+    cursor:pointer;
+  }
+  .step-header-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .step-num-badge{
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:#e5e7eb;
+    color:#6b7280;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .step-card.done .step-num-badge{
+    background:var(--success);
+    color:#fff;
+  }
+  .step-card.open .step-num-badge{
+    background:var(--accent);
+    color:#fff;
+  }
+  .step-title{
+    font-size:15px;
+    font-weight:700;
+  }
+  .step-header-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .step-summary{
+    font-size:13px;
+    color:var(--accent);
+    font-weight:600;
+  }
+  .chevron{
+    color:var(--text-faint);
+    font-size:12px;
+    transition:transform .2s;
+  }
+  .step-card.open .chevron{ transform:rotate(180deg); }
+  .step-body{ display:none; padding:0 22px 22px; }
+  .step-card.open .step-body{ display:block; }
+
+  .check-icon{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#e5e7eb;
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    font-weight:700;
+  }
+  .step-card.done .check-icon{ background:var(--success); }
+
+  /* ===== buttons ===== */
+  .btn{
+    border:none;
+    border-radius:var(--radius-sm);
+    padding:9px 16px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .btn-dark{ background:var(--dark-btn); color:#fff; }
+  .btn-dark:hover{ background:var(--dark-btn-hover); }
+  .btn-accent{ background:var(--accent); color:#fff; }
+  .btn-accent:hover{ background:var(--accent-hover); }
+  .btn-light{ background:#f3f4f6; color:var(--text); }
+  .btn-light:hover{ background:#e5e7eb; }
+  .btn-outline{ background:#fff; border:1px solid var(--border); color:var(--text); }
+  .btn-outline:hover{ background:#f9fafb; }
+  .btn-next{
+    display:block;
+    margin:18px auto 0;
+    min-width:160px;
+    padding:11px 20px;
+  }
+
+  /* ===== Step 1: channel grid ===== */
+  .channel-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(2,1fr);
+    gap:14px;
+    margin-top:4px;
+  }
+  .channel-card{
+    border:1.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    background:#fff;
+    transition:border-color .15s, background .15s;
+  }
+  .channel-card:hover{ border-color:var(--accent); background:#f8f8ff; }
+  .channel-card.selected{ border-color:var(--accent); background:#eef2ff; }
+  .channel-icon{ font-size:26px; }
+  .channel-name{ font-size:13px; font-weight:600; text-align:center; }
+
+  /* ===== Step 2: target table ===== */
+  .target-panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .target-panel-title{ font-size:14px; font-weight:700; }
+  .target-panel-actions{ display:flex; gap:8px; }
+
+  table.target-table{
+    width:100%;
+    border-collapse:collapse;
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+  }
+  table.target-table td{
+    border:1px solid var(--border);
+    padding:12px 14px;
+    vertical-align:middle;
+    font-size:13px;
+  }
+  td.cat-cell{
+    background:#f3f4f6;
+    font-weight:700;
+    text-align:center;
+    width:100px;
+  }
+  td.item-cell{
+    width:150px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .tooltip-q{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    background:#d1d5db;
+    color:#fff;
+    font-size:10px;
+    font-weight:700;
+    margin-left:5px;
+    cursor:default;
+  }
+  .radio-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .radio-row label{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .radio-row input[type=radio]{ accent-color:var(--accent); cursor:pointer; }
+  .extra-inline{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-left:-6px;
+  }
+  .mini-input{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:5px 8px;
+    font-size:12px;
+    width:90px;
+  }
+  .mini-input.narrow{ width:64px; }
+  .hint{ font-size:11px; color:var(--text-faint); }
+
+  .audience-bar{
+    margin-top:18px;
+    background:#f3f4f6;
+    border-radius:var(--radius);
+    padding:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+  }
+  .audience-count-text{ font-size:14px; font-weight:600; }
+  .audience-count-num{ color:var(--success); font-weight:800; }
+
+  /* ===== Step 3: benefit ===== */
+  .benefit-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .benefit-head-left{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:14px; }
+  #benefitForm{
+    margin-top:18px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px;
+    background:#fafafa;
+    display:none;
+  }
+  .benefit-type-row{ display:flex; align-items:center; gap:20px; margin-bottom:14px; }
+  .benefit-value-row{ display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+  .benefit-code-row{ display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .code-input{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:9px 12px;
+    font-size:13px;
+    background:#fff;
+    font-weight:700;
+    letter-spacing:.5px;
+    width:200px;
+    color:var(--accent);
+  }
+  .num-input{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:8px 10px;
+    font-size:13px;
+    width:90px;
+  }
+  .benefit-note{
+    font-size:12px;
+    color:var(--text-muted);
+    line-height:1.7;
+    margin-top:4px;
+  }
+
+  /* ===== Step 4: popup design ===== */
+  .popup-layout{
+    display:flex;
+    gap:24px;
+    margin-top:6px;
+    align-items:flex-start;
+  }
+  .popup-form{ flex:1.1; display:flex; flex-direction:column; gap:16px; }
+  .popup-preview-wrap{ flex:1; position:sticky; top:0; }
+
+  .field-row{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+  .field-pill{
+    flex-shrink:0;
+    background:#1f2328;
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:999px;
+    margin-top:2px;
+    white-space:nowrap;
+  }
+  .field-control{ flex:1; display:flex; flex-direction:column; gap:10px; }
+  .inline-options{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+  .inline-options label{ display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; white-space:nowrap; }
+
+  .tag-checks{ display:flex; flex-wrap:wrap; gap:8px; }
+  .position-tag{
+    border:1.5px solid var(--border);
+    border-radius:999px;
+    padding:7px 14px;
+    font-size:12.5px;
+    cursor:pointer;
+    background:#fff;
+    transition:border-color .15s, background .15s, color .15s;
+  }
+  .position-tag:has(input:checked){
+    border-color:var(--accent);
+    background:#eef2ff;
+    color:var(--accent);
+    font-weight:700;
+  }
+  .position-tag input{ display:none; }
+
+  .text-input, .url-input{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:9px 12px;
+    font-size:13px;
+    width:100%;
+  }
+  .static-value{ font-size:13px; color:var(--text-muted); font-weight:600; padding-top:6px; }
+
+  /* ===== Preview ===== */
+  .preview-frame{
+    background:#e9eaee;
+    border-radius:var(--radius);
+    padding:20px;
+  }
+  .preview-image-ph{
+    background:#d1d3d8;
+    border-radius:var(--radius-sm);
+    height:130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#9198a5;
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:16px;
+  }
+  .preview-popup-card{
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+    padding:22px 20px 20px;
+    position:relative;
+    text-align:center;
+  }
+  .preview-close{
+    position:absolute;
+    top:12px;
+    right:14px;
+    color:var(--text-faint);
+    font-size:16px;
+    cursor:default;
+  }
+  .preview-headline{
+    font-size:16px;
+    font-weight:800;
+    margin:4px 0 6px;
+    word-break:break-word;
+  }
+  .preview-subtext{
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-bottom:12px;
+  }
+  .preview-badge{
+    display:inline-block;
+    background:#fff1f0;
+    color:#e0451f;
+    border:1px solid #ffd8d1;
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:12.5px;
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .preview-cta{
+    display:block;
+    width:100%;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:12px;
+    font-size:13.5px;
+    font-weight:700;
+  }
+  .preview-positions{
+    margin-top:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:center;
+  }
+  .pos-pill{
+    border:1.5px solid var(--success);
+    color:var(--success);
+    border-radius:999px;
+    padding:4px 12px;
+    font-size:11.5px;
+    font-weight:700;
+  }
+
+  /* ===== Step 5 ===== */
+  .period-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:14px;
+  }
+  .period-inputs{ display:flex; align-items:center; gap:10px; }
+  .date-input{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:9px 12px;
+    font-size:13px;
+  }
+
+  /* ===== Publish bar ===== */
+  .divider{
+    border:none;
+    border-top:1px solid var(--border);
+    margin:10px 0 0;
+  }
+  .publish-bar{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    padding:22px 0 10px;
+  }
+  .publish-bar .btn{ min-width:130px; padding:12px 20px; font-size:13.5px; }
+
+  /* ===== Toast ===== */
+  .toast{
+    position:fixed;
+    bottom:34px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:#1f2328;
+    color:#fff;
+    padding:13px 22px;
+    border-radius:var(--radius-sm);
+    font-size:13px;
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s, transform .2s;
+    z-index:200;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ===== Modal ===== */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:300;
+  }
+  .modal-box{
+    background:#fff;
+    border-radius:16px;
+    padding:40px 44px;
+    text-align:center;
+    min-width:320px;
+  }
+  .modal-check{
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    background:#eef2ff;
+    color:var(--accent);
+    font-size:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 18px;
+  }
+  .modal-title{ font-size:16px; font-weight:800; margin-bottom:8px; }
+  .modal-box .btn{ margin-top:18px; min-width:120px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== Sidebar (index) ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-header">캠페인 빌더</div>
+    <ul class="nav-list" id="navList">
+      <li class="nav-item active" data-step="1" onclick="navClick(1)"><span class="nav-num">1</span>캠페인 종류</li>
+      <li class="nav-item locked" data-step="2" onclick="navClick(2)"><span class="nav-num">2</span>타겟 설정</li>
+      <li class="nav-item locked" data-step="3" onclick="navClick(3)"><span class="nav-num">3</span>혜택 설정</li>
+      <li class="nav-item locked" data-step="4" onclick="navClick(4)"><span class="nav-num">4</span>팝업 디자인</li>
+      <li class="nav-item locked" data-step="5" onclick="navClick(5)"><span class="nav-num">5</span>캠페인 기간</li>
+    </ul>
+  </nav>
+
+  <!-- ===== Content (builder) ===== -->
+  <main class="content-panel">
+    <div class="builder">
+
+      <!-- STEP 1 -->
+      <section class="step-card open" id="card1">
+        <div class="step-header" onclick="toggleStep(1)">
+          <div class="step-header-left">
+            <span class="step-num-badge">1</span>
+            <span class="step-title">캠페인 종류</span>
+          </div>
+          <div class="step-header-right">
+            <span class="step-summary" id="summary1"></span>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <div class="channel-grid">
+            <div class="channel-card" onclick="selectChannel('popup', this)">
+              <div class="channel-icon">🖼️</div>
+              <div class="channel-name">콘텐츠 팝업</div>
+            </div>
+            <div class="channel-card" onclick="selectChannel('apppush', this)">
+              <div class="channel-icon">🔔</div>
+              <div class="channel-name">APP푸시</div>
+            </div>
+            <div class="channel-card" onclick="selectChannel('alimtalk', this)">
+              <div class="channel-icon">💬</div>
+              <div class="channel-name">알림톡</div>
+            </div>
+            <div class="channel-card" onclick="selectChannel('friendtalk', this)">
+              <div class="channel-icon">📨</div>
+              <div class="channel-name">브랜드메시지(친구톡)</div>
+            </div>
+            <div class="channel-card" onclick="selectChannel('lms', this)">
+              <div class="channel-icon">✉️</div>
+              <div class="channel-name">LMS</div>
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step-card locked" id="card2">
+        <div class="step-header" onclick="toggleStep(2)">
+          <div class="step-header-left">
+            <span class="step-num-badge">2</span>
+            <span class="step-title">타겟 설정</span>
+          </div>
+          <div class="step-header-right">
+            <span class="step-summary" id="summary2"></span>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <div class="target-panel-head">
+            <div class="target-panel-title">고객 그룹 A</div>
+            <div class="target-panel-actions">
+              <button class="btn btn-outline" onclick="resetTargets()">초기화</button>
+              <button class="btn btn-outline" onclick="showToast('그룹 추가 기능은 준비 중입니다.')">그룹 추가 +</button>
+            </div>
+          </div>
+
+          <table class="target-table">
+            <tbody>
+              <tr>
+                <td class="cat-cell" rowspan="4">구매</td>
+                <td class="item-cell">구매기간</td>
+                <td>
+                  <div class="radio-row" data-row="purchasePeriod">
+                    <label><input type="radio" name="purchasePeriod" value="전체" data-default="true" checked onchange="toggleExtra('purchasePeriod',false)"> 전체</label>
+                    <label><input type="radio" name="purchasePeriod" value="최근" onchange="toggleExtra('purchasePeriod',false)"> 최근</label>
+                    <label><input type="radio" name="purchasePeriod" value="기간" onchange="toggleExtra('purchasePeriod',true)"> 특정 기간</label>
+                    <span class="extra-inline" id="extra_purchasePeriod" style="display:none">
+                      <input type="date" class="mini-input"><span>~</span><input type="date" class="mini-input"><span class="hint">(최대 1년)</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="item-cell">구매금액</td>
+                <td>
+                  <div class="radio-row" data-row="purchaseAmount">
+                    <label><input type="radio" name="purchaseAmount" value="전체" data-default="true" checked onchange="toggleExtra('purchaseAmount',false)"> 전체</label>
+                    <label><input type="radio" name="purchaseAmount" value="금액" onchange="toggleExtra('purchaseAmount',true)"> 특정 금액</label>
+                    <span class="extra-inline" id="extra_purchaseAmount" style="display:none">
+                      <input type="number" class="mini-input narrow" placeholder="0"><span class="hint">원 이상</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="item-cell">구매건수</td>
+                <td>
+                  <div class="radio-row" data-row="purchaseCount">
+                    <label><input type="radio" name="purchaseCount" value="전체" data-default="true" checked onchange="toggleExtra('purchaseCount',false)"> 전체</label>
+                    <label><input type="radio" name="purchaseCount" value="건수" onchange="toggleExtra('purchaseCount',true)"> 특정 건수</label>
+                    <span class="extra-inline" id="extra_purchaseCount" style="display:none">
+                      <input type="number" class="mini-input narrow" placeholder="0"><span class="hint">건 이상</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="item-cell">구매상품</td>
+                <td>
+                  <div class="radio-row" data-row="purchaseProduct">
+                    <label><input type="radio" name="purchaseProduct" value="전체" data-default="true" checked onchange="toggleExtra('purchaseProduct',false)"> 전체</label>
+                    <label><input type="radio" name="purchaseProduct" value="상품" onchange="toggleExtra('purchaseProduct',true)"> 특정 상품</label>
+                    <span class="extra-inline" id="extra_purchaseProduct" style="display:none">
+                      <input type="text" class="mini-input" placeholder="상품명 입력">
+                    </span>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="cat-cell" rowspan="1">회원가입</td>
+                <td class="item-cell">가입기간</td>
+                <td>
+                  <div class="radio-row" data-row="signupPeriod">
+                    <label><input type="radio" name="signupPeriod" value="전체" data-default="true" checked onchange="toggleExtra('signupPeriod',false)"> 전체</label>
+                    <label><input type="radio" name="signupPeriod" value="최근" onchange="toggleExtra('signupPeriod',false)"> 최근</label>
+                    <label><input type="radio" name="signupPeriod" value="기간" onchange="toggleExtra('signupPeriod',true)"> 특정 기간</label>
+                    <span class="extra-inline" id="extra_signupPeriod" style="display:none">
+                      <input type="date" class="mini-input"><span>~</span><input type="date" class="mini-input"><span class="hint">(최대 1년)</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="cat-cell" rowspan="2">APP설치</td>
+                <td class="item-cell">설치여부</td>
+                <td>
+                  <div class="radio-row" data-row="installStatus">
+                    <label><input type="radio" name="installStatus" value="전체" data-default="true" checked> 전체</label>
+                    <label><input type="radio" name="installStatus" value="설치"> 설치</label>
+                    <label><input type="radio" name="installStatus" value="미설치"> 미설치</label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="item-cell">설치시기</td>
+                <td>
+                  <div class="radio-row" data-row="installPeriod">
+                    <label><input type="radio" name="installPeriod" value="전체" data-default="true" checked onchange="toggleExtra('installPeriod',false)"> 전체</label>
+                    <label><input type="radio" name="installPeriod" value="최근" onchange="toggleExtra('installPeriod',false)"> 최근</label>
+                    <label><input type="radio" name="installPeriod" value="기간" onchange="toggleExtra('installPeriod',true)"> 특정 기간</label>
+                    <span class="extra-inline" id="extra_installPeriod" style="display:none">
+                      <input type="date" class="mini-input"><span>~</span><input type="date" class="mini-input"><span class="hint">(최대 1년)</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="cat-cell" rowspan="2">방문</td>
+                <td class="item-cell">방문여부</td>
+                <td>
+                  <div class="radio-row" data-row="visitStatus">
+                    <label><input type="radio" name="visitStatus" value="전체" data-default="true" checked> 전체</label>
+                    <label><input type="radio" name="visitStatus" value="방문"> 방문(최대 1년)</label>
+                    <label><input type="radio" name="visitStatus" value="미방문"> 미방문(최대 1년)</label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="item-cell">방문횟수</td>
+                <td>
+                  <div class="radio-row" data-row="visitCount">
+                    <label><input type="radio" name="visitCount" value="전체" data-default="true" checked onchange="toggleExtra('visitCount',false)"> 전체</label>
+                    <label><input type="radio" name="visitCount" value="횟수" onchange="toggleExtra('visitCount',true)"> 특정 횟수</label>
+                    <span class="extra-inline" id="extra_visitCount" style="display:none">
+                      <input type="number" class="mini-input narrow" placeholder="0"><span class="hint">회 이상</span>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="cat-cell" rowspan="2">관심상품<span class="tooltip-q">?</span></td>
+                <td class="item-cell">관심상품</td>
+                <td>
+                  <div class="radio-row" data-row="interestProduct">
+                    <label><input type="radio" name="interestProduct" value="전체" data-default="true" checked onchange="toggleExtra('interestProduct',false)"> 전체</label>
+                    <label><input type="radio" name="interestProduct" value="상품" onchange="toggleExtra('interestProduct',true)"> 특정 상품</label>
+                    <span class="extra-inline" id="extra_interestProduct" style="display:none">
+                      <input type="text" class="mini-input" placeholder="상품명 입력">
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="item-cell">관심상품으로 등록한 시기</td>
+                <td>
+                  <div class="radio-row" data-row="interestPeriod">
+                    <label><input type="radio" name="interestPeriod" value="최근 3개월" data-default="true" checked> 최근 3개월</label>
+                    <label><input type="radio" name="interestPeriod" value="최근 1개월"> 최근 1개월</label>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="audience-bar">
+            <span class="audience-count-text">대상자 수 <span class="audience-count-num" id="audienceCount">0</span>명</span>
+            <button class="btn btn-dark" onclick="queryAudience()">대상자 조회</button>
+          </div>
+
+          <button class="btn btn-accent btn-next" onclick="confirmStep2()">다음</button>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="step-card locked" id="card3">
+        <div class="step-header" onclick="toggleStep(3)">
+          <div class="step-header-left">
+            <span class="step-num-badge">3</span>
+            <span class="step-title">혜택 설정</span>
+          </div>
+          <div class="step-header-right">
+            <span class="step-summary" id="summary3"></span>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <div class="benefit-head">
+            <div class="benefit-head-left"><span class="check-icon">✓</span> 혜택 설정</div>
+            <button class="btn btn-dark" id="addBenefitBtn" onclick="showBenefitForm()">할인코드 생성 +</button>
+          </div>
+
+          <div id="benefitForm">
+            <div class="benefit-type-row">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="radio" name="benefitType" value="percent" checked onchange="updateBenefitUnit()"> 할인율(%)
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="radio" name="benefitType" value="amount" onchange="updateBenefitUnit()"> 할인금액(원)
+              </label>
+            </div>
+            <div class="benefit-value-row">
+              <input type="number" class="num-input" id="benefitValue" value="10" oninput="onBenefitValueChange()">
+              <span id="benefitUnit">%</span>
+            </div>
+            <div class="benefit-code-row">
+              <input type="text" class="code-input" id="discountCode" readonly>
+              <button class="btn btn-outline" onclick="regenerateCode()">재생성</button>
+            </div>
+            <div class="benefit-note">
+              CRM 할인코드는 발송일 포함 3일 동안만 유효합니다.<br>
+              설정된 할인코드를 사용하지 않은 계정만 캠페인이 노출되거나 발송됩니다.
+            </div>
+          </div>
+
+          <button class="btn btn-accent btn-next" onclick="confirmStep3()">다음</button>
+        </div>
+      </section>
+
+      <!-- STEP 4 -->
+      <section class="step-card locked" id="card4">
+        <div class="step-header" onclick="toggleStep(4)">
+          <div class="step-header-left">
+            <span class="step-num-badge">4</span>
+            <span class="step-title">팝업 디자인</span>
+          </div>
+          <div class="step-header-right">
+            <span class="step-summary" id="summary4"></span>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <div class="popup-layout">
+            <div class="popup-form">
+
+              <div class="field-row">
+                <span class="field-pill">시점 및 조건</span>
+                <div class="field-control">
+                  <div class="inline-options">
+                    <label><input type="radio" name="popupTiming" value="immediate" checked onchange="onTimingChange()"> 즉시 노출</label>
+                    <label><input type="radio" name="popupTiming" value="elapsed" onchange="onTimingChange()"> 회원가입 후 경과일 기준</label>
+                  </div>
+                  <div class="inline-options" id="dayAfterFields" style="display:none">
+                    <input type="number" class="mini-input narrow" id="dayAfterInput" value="1" oninput="updatePreview()">
+                    <span>일차 이후</span>
+                    <select class="mini-input" id="dayAfterCondition" onchange="updatePreview()">
+                      <option value="visit">쇼핑몰 방문 시</option>
+                      <option value="cart">장바구니 담은 후</option>
+                      <option value="detail">상품 상세 조회 시</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <span class="field-pill">노출 위치</span>
+                <div class="field-control">
+                  <div class="tag-checks">
+                    <label class="position-tag"><input type="checkbox" value="처음 방문한 페이지" onchange="updatePreview()">처음 방문한 페이지</label>
+                    <label class="position-tag"><input type="checkbox" value="메인" onchange="updatePreview()">메인</label>
+                    <label class="position-tag"><input type="checkbox" value="상품 목록" onchange="updatePreview()">상품 목록</label>
+                    <label class="position-tag"><input type="checkbox" value="상품 상세" onchange="updatePreview()">상품 상세</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <span class="field-pill">클릭 액션</span>
+                <div class="field-control">
+                  <div class="inline-options">
+                    <label><input type="radio" name="clickAction" value="close" checked onchange="onClickActionChange()"> 팝업 닫힘(버튼 클릭 시 할인코드 자동 적용)</label>
+                    <label><input type="radio" name="clickAction" value="landing" onchange="onClickActionChange()"> 랜딩 URL로 이동</label>
+                  </div>
+                  <div id="landingUrlField" style="display:none">
+                    <input type="text" class="url-input" placeholder="https://" oninput="updatePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <span class="field-pill">비용</span>
+                <div class="field-control">
+                  <div class="static-value">무료</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <span class="field-pill">팝업 문구</span>
+                <div class="field-control">
+                  <input type="text" class="text-input" id="popupHeadline" placeholder="헤드라인을 입력해주세요" oninput="updatePreview()">
+                </div>
+              </div>
+
+              <div class="field-row">
+                <span class="field-pill">버튼 문구</span>
+                <div class="field-control">
+                  <input type="text" class="text-input" id="popupButtonText" placeholder="버튼 문구를 입력해주세요" oninput="updatePreview()">
+                </div>
+              </div>
+
+            </div>
+
+            <div class="popup-preview-wrap">
+              <div class="preview-frame">
+                <div class="preview-image-ph">이미지 영역</div>
+                <div class="preview-popup-card">
+                  <span class="preview-close">✕</span>
+                  <div class="preview-headline" id="previewHeadline">팝업 문구를 입력해주세요</div>
+                  <div class="preview-subtext">버튼 클릭 시 자동 적용</div>
+                  <div class="preview-badge" id="previewBadge" style="display:none"></div>
+                  <button class="preview-cta" id="previewButton">확인</button>
+                </div>
+                <div class="preview-positions" id="previewPositions"></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-accent btn-next" onclick="confirmStep4()">다음</button>
+        </div>
+      </section>
+
+      <!-- STEP 5 -->
+      <section class="step-card locked" id="card5">
+        <div class="step-header" onclick="toggleStep(5)">
+          <div class="step-header-left">
+            <span class="step-num-badge">5</span>
+            <span class="step-title">캠페인 기간</span>
+          </div>
+          <div class="step-header-right">
+            <span class="step-summary" id="summary5"></span>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <div class="period-row">
+            <div class="period-inputs">
+              <input type="text" class="date-input" id="periodStart" placeholder="기간 설정" onfocus="(this.type='date')" onchange="checkPeriodComplete()">
+              <span>~</span>
+              <input type="text" class="date-input" id="periodEnd" placeholder="기간 설정" onfocus="(this.type='date')" onchange="checkPeriodComplete()">
+            </div>
+            <button class="btn btn-dark" onclick="resetPeriod()">기간 초기화</button>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+      <div class="publish-bar">
+        <button class="btn btn-light" onclick="cancelCampaign()">취소</button>
+        <button class="btn btn-light" onclick="testPublish()">테스트 발행</button>
+        <button class="btn btn-accent" onclick="publishCampaign()">캠페인 발행</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="publishModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-check">✓</div>
+    <div class="modal-title">캠페인이 발행되었습니다</div>
+    <button class="btn btn-accent" onclick="closePublishModal()">확인</button>
+  </div>
+</div>
+
+<script>
+  let benefit = { created:false, type:'percent', value:10, code:'' };
+  let toastTimer = null;
+
+  function cardEl(n){ return document.getElementById('card'+n); }
+  function navEl(n){ return document.querySelector('.nav-item[data-step="'+n+'"]'); }
+
+  function refreshNavStates(){
+    for(let i=1;i<=5;i++){
+      const card = cardEl(i), nav = navEl(i);
+      nav.classList.toggle('locked', card.classList.contains('locked'));
+      nav.classList.toggle('active', card.classList.contains('open'));
+      nav.classList.toggle('done', card.classList.contains('done'));
+    }
+  }
+
+  function toggleStep(n){
+    const card = cardEl(n);
+    if(card.classList.contains('locked')) return;
+    card.classList.toggle('open');
+    refreshNavStates();
+  }
+
+  function navClick(n){
+    const card = cardEl(n);
+    if(card.classList.contains('locked')) return;
+    if(!card.classList.contains('open')) card.classList.add('open');
+    refreshNavStates();
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function completeStep(n, summaryText){
+    const card = cardEl(n);
+    card.classList.remove('open');
+    card.classList.add('done');
+    document.getElementById('summary'+n).textContent = summaryText;
+    const next = n+1;
+    if(next<=5){
+      const nextCard = cardEl(next);
+      nextCard.classList.remove('locked');
+      nextCard.classList.add('open');
+    }
+    refreshNavStates();
+    if(next<=5){
+      setTimeout(()=>{ cardEl(next).scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
+    }
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ t.classList.remove('show'); }, 2500);
+  }
+
+  /* ===== Step 1 ===== */
+  function selectChannel(type, el){
+    if(type !== 'popup'){
+      showToast('준비 중인 기능입니다.');
+      return;
+    }
+    document.querySelectorAll('.channel-card').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    setTimeout(()=>completeStep(1, '콘텐츠 팝업'), 200);
+  }
+
+  /* ===== Step 2 ===== */
+  function toggleExtra(rowName, show){
+    const extra = document.getElementById('extra_'+rowName);
+    if(extra) extra.style.display = show ? 'inline-flex' : 'none';
+  }
+
+  function resetTargets(){
+    document.querySelectorAll('#card2 input[type=radio][data-default="true"]').forEach(r=>{ r.checked = true; });
+    document.querySelectorAll('#card2 .extra-inline').forEach(e=>{ e.style.display = 'none'; });
+    document.querySelectorAll('#card2 .mini-input').forEach(i=>{ i.value=''; });
+    document.getElementById('audienceCount').textContent = '0';
+  }
+
+  function queryAudience(){
+    const n = Math.floor(Math.random()*45000)+120;
+    document.getElementById('audienceCount').textContent = n.toLocaleString();
+  }
+
+  function confirmStep2(){
+    const count = document.getElementById('audienceCount').textContent;
+    completeStep(2, '대상자 수 '+count+'명');
+  }
+
+  /* ===== Step 3 ===== */
+  function showBenefitForm(){
+    document.getElementById('benefitForm').style.display = 'block';
+    document.getElementById('addBenefitBtn').style.display = 'none';
+    regenerateCode();
+    updateBenefitUnit();
+  }
+
+  function regenerateCode(){
+    const code = 'CRM-' + Math.random().toString(36).substring(2,8).toUpperCase();
+    document.getElementById('discountCode').value = code;
+    benefit.code = code;
+    updatePreview();
+  }
+
+  function updateBenefitUnit(){
+    const type = document.querySelector('input[name=benefitType]:checked').value;
+    benefit.type = type;
+    document.getElementById('benefitUnit').textContent = type === 'percent' ? '%' : '원';
+    updatePreview();
+  }
+
+  function onBenefitValueChange(){
+    benefit.value = document.getElementById('benefitValue').value || 0;
+    updatePreview();
+  }
+
+  function confirmStep3(){
+    benefit.created = document.getElementById('benefitForm').style.display === 'block';
+    const summary = benefit.created
+      ? benefit.value + (benefit.type==='percent'?'%':'원') + ' 할인 · ' + benefit.code
+      : '혜택 미설정';
+    completeStep(3, summary);
+  }
+
+  /* ===== Step 4 ===== */
+  function onTimingChange(){
+    const timing = document.querySelector('input[name=popupTiming]:checked').value;
+    document.getElementById('dayAfterFields').style.display = timing === 'elapsed' ? 'flex' : 'none';
+    updatePreview();
+  }
+
+  function onClickActionChange(){
+    const action = document.querySelector('input[name=clickAction]:checked').value;
+    document.getElementById('landingUrlField').style.display = action === 'landing' ? 'block' : 'none';
+    updatePreview();
+  }
+
+  function updatePreview(){
+    const headline = document.getElementById('popupHeadline').value.trim();
+    document.getElementById('previewHeadline').textContent = headline || '팝업 문구를 입력해주세요';
+
+    const btnText = document.getElementById('popupButtonText').value.trim();
+    document.getElementById('previewButton').textContent = btnText || '확인';
+
+    const badge = document.getElementById('previewBadge');
+    if(benefit.created){
+      badge.style.display = 'inline-block';
+      badge.textContent = benefit.value + (benefit.type==='percent'?'%':'원') + ' 할인 · ' + benefit.code;
+    } else {
+      badge.style.display = 'none';
+    }
+
+    const checked = Array.from(document.querySelectorAll('.position-tag input:checked')).map(cb=>cb.value);
+    const posWrap = document.getElementById('previewPositions');
+    posWrap.innerHTML = checked.map(p=>'<span class="pos-pill">'+p+'</span>').join('');
+  }
+
+  function confirmStep4(){
+    const timing = document.querySelector('input[name=popupTiming]:checked').value;
+    let timingText;
+    if(timing === 'immediate'){
+      timingText = '즉시 노출';
+    } else {
+      const day = document.getElementById('dayAfterInput').value || 0;
+      timingText = '가입 후 ' + day + '일차';
+    }
+    const positions = Array.from(document.querySelectorAll('.position-tag input:checked')).map(cb=>cb.value);
+    const posText = positions.length ? positions.join(', ') : '위치 미설정';
+    completeStep(4, timingText + ' · ' + posText);
+  }
+
+  /* ===== Step 5 ===== */
+  function checkPeriodComplete(){
+    const start = document.getElementById('periodStart').value;
+    const end = document.getElementById('periodEnd').value;
+    if(start && end){
+      completeStep(5, start + ' ~ ' + end);
+    }
+  }
+
+  function resetPeriod(){
+    const s = document.getElementById('periodStart');
+    const e = document.getElementById('periodEnd');
+    s.value=''; e.value='';
+    s.type='text'; e.type='text';
+  }
+
+  /* ===== Publish bar ===== */
+  function cancelCampaign(){
+    console.log('캠페인 생성이 취소되었습니다.');
+    showToast('취소되었습니다.');
+  }
+
+  function testPublish(){
+    showToast('테스트 발행되었습니다.');
+  }
+
+  function publishCampaign(){
+    document.getElementById('publishModal').style.display = 'flex';
+  }
+
+  function closePublishModal(){
+    document.getElementById('publishModal').style.display = 'none';
+  }
+
+  refreshNavStates();
+</script>
+
+</body>
+</html>
