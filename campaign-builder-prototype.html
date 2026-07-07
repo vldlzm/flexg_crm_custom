@@ -215,6 +215,8 @@
   .btn-dark:hover{ background:var(--dark-btn-hover); }
   .btn-accent{ background:var(--accent); color:#fff; }
   .btn-accent:hover{ background:var(--accent-hover); }
+  .btn:disabled{ background:#d1d5db; color:#9ca3af; cursor:not-allowed; }
+  .btn:disabled:hover{ background:#d1d5db; }
   .btn-light{ background:#f3f4f6; color:var(--text); }
   .btn-light:hover{ background:#e5e7eb; }
   .btn-outline{ background:#fff; border:1px solid var(--border); color:var(--text); }
@@ -546,6 +548,13 @@
     font-size:12.5px;
     font-weight:700;
     margin-bottom:14px;
+  }
+  .preview-badge.preview-badge-placeholder{
+    background:#f3f4f6;
+    color:var(--text-faint);
+    border-color:var(--border);
+    font-style:italic;
+    font-weight:600;
   }
   .preview-cta{
     display:block;
@@ -1073,7 +1082,7 @@
                     <label><input type="radio" name="clickAction" value="landing" onchange="onClickActionChange()"> 랜딩 URL로 이동</label>
                   </div>
                   <div id="landingUrlField" style="display:none">
-                    <input type="text" class="url-input" placeholder="https://" oninput="updatePreview()">
+                    <input type="text" class="url-input" id="landingUrlInput" placeholder="https://" oninput="updatePreview()">
                   </div>
                 </div>
               </div>
@@ -1155,7 +1164,7 @@
       <div class="publish-bar">
         <button class="btn btn-light" onclick="cancelCampaign()">취소</button>
         <button class="btn btn-light" onclick="testPublish()">테스트 발행</button>
-        <button class="btn btn-accent" onclick="publishCampaign()">캠페인 발행</button>
+        <button class="btn btn-accent" id="publishCampaignBtn" onclick="publishCampaign()" disabled>캠페인 발행</button>
       </div>
 
     </div>
@@ -1190,14 +1199,20 @@
 
   function toggleStep(n){
     const card = cardEl(n);
-    if(card.classList.contains('locked')) return;
+    if(card.classList.contains('locked')){
+      showToast('먼저 1단계(캠페인 종류)를 선택해주세요.');
+      return;
+    }
     card.classList.toggle('open');
     refreshNavStates();
   }
 
   function navClick(n){
     const card = cardEl(n);
-    card.classList.remove('locked');
+    if(card.classList.contains('locked')){
+      showToast('먼저 1단계(캠페인 종류)를 선택해주세요.');
+      return;
+    }
     if(!card.classList.contains('open')) card.classList.add('open');
     refreshNavStates();
     card.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1208,16 +1223,28 @@
     card.classList.remove('open');
     card.classList.add('done');
     document.getElementById('summary'+n).textContent = summaryText;
-    const next = n+1;
-    if(next<=5){
-      const nextCard = cardEl(next);
-      nextCard.classList.remove('locked');
-      nextCard.classList.add('open');
+
+    if(n === 1){
+      [2,3,4,5].forEach(i=>{ cardEl(i).classList.remove('locked'); });
+      cardEl(2).classList.add('open');
+      refreshNavStates();
+      setTimeout(()=>{ cardEl(2).scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
+    } else {
+      const order = [2,3,4,5];
+      const idx = order.indexOf(n);
+      let nextToOpen = null;
+      for(let k=1;k<=order.length;k++){
+        const candidate = order[(idx+k) % order.length];
+        if(!cardEl(candidate).classList.contains('done')){ nextToOpen = candidate; break; }
+      }
+      if(nextToOpen){
+        cardEl(nextToOpen).classList.add('open');
+        setTimeout(()=>{ cardEl(nextToOpen).scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
+      }
+      refreshNavStates();
+      updatePublishButtonState();
     }
-    refreshNavStates();
-    if(next<=5){
-      setTimeout(()=>{ cardEl(next).scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
-    }
+    updatePreview();
   }
 
   function showToast(msg){
@@ -1229,14 +1256,36 @@
   }
 
   /* ===== Step 1 ===== */
+  let currentChannel = null;
+
   function selectChannel(type, el){
     if(type !== 'popup'){
       showToast('준비 중인 기능입니다.');
       return;
     }
+    const isChannelChange = currentChannel !== null && currentChannel !== type;
     document.querySelectorAll('.channel-card').forEach(c=>c.classList.remove('selected'));
     el.classList.add('selected');
+    if(isChannelChange){
+      resetStepsTwoToFive();
+      showToast('채널이 변경되어 2~5단계 설정을 초기화했습니다.');
+    }
+    currentChannel = type;
     setTimeout(()=>completeStep(1, '콘텐츠 팝업'), 200);
+  }
+
+  function resetStepsTwoToFive(){
+    [2,3,4,5].forEach(i=>{
+      const c = cardEl(i);
+      c.classList.remove('done');
+      c.classList.remove('open');
+      document.getElementById('summary'+i).textContent = '';
+    });
+    resetTargets();
+    resetStep3Fields();
+    resetStep4Fields();
+    resetPeriod();
+    updatePublishButtonState();
   }
 
   /* ===== Step 2 ===== */
@@ -1378,11 +1427,18 @@
     document.getElementById('previewButton').textContent = btnText || '확인';
 
     const badge = document.getElementById('previewBadge');
-    if(benefit.created){
+    const step3Done = cardEl(3).classList.contains('done');
+    if(!step3Done){
       badge.style.display = 'inline-block';
+      badge.classList.add('preview-badge-placeholder');
+      badge.textContent = '#{할인코드}';
+    } else if(benefit.created){
+      badge.style.display = 'inline-block';
+      badge.classList.remove('preview-badge-placeholder');
       badge.textContent = benefit.value + (benefit.type==='percent'?'%':'원') + ' 할인 · ' + benefit.code;
     } else {
       badge.style.display = 'none';
+      badge.classList.remove('preview-badge-placeholder');
     }
 
     const position = document.getElementById('popupPositionSelect').value;
@@ -1394,6 +1450,21 @@
     const timingText = buildTimingSummary();
     const posText = document.getElementById('popupPositionSelect').value || '위치 미설정';
     completeStep(4, timingText + ' · ' + posText);
+  }
+
+  function resetStep4Fields(){
+    document.getElementById('popupTimingSelect').value = 'immediate';
+    onTimingChange();
+    document.getElementById('cartAbandonInput').value = '1';
+    document.getElementById('cartAbandonUnit').value = 'hour';
+    document.getElementById('visitCountInput').value = '3';
+    document.getElementById('popupPositionSelect').selectedIndex = 0;
+    document.querySelector('input[name=clickAction][value="close"]').checked = true;
+    document.getElementById('landingUrlField').style.display = 'none';
+    document.getElementById('landingUrlInput').value = '';
+    document.getElementById('popupHeadline').value = '';
+    document.getElementById('popupButtonText').value = '';
+    updatePreview();
   }
 
   /* ===== Step 5 ===== */
@@ -1413,6 +1484,11 @@
   }
 
   /* ===== Publish bar ===== */
+  function updatePublishButtonState(){
+    const allDone = [2,3,4,5].every(i=>cardEl(i).classList.contains('done'));
+    document.getElementById('publishCampaignBtn').disabled = !allDone;
+  }
+
   function cancelCampaign(){
     console.log('캠페인 생성이 취소되었습니다.');
     showToast('취소되었습니다.');
@@ -1431,6 +1507,7 @@
   }
 
   refreshNavStates();
+  updatePublishButtonState();
 </script>
 
 </body>
