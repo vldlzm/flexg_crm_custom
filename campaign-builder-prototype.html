@@ -320,6 +320,7 @@
     width:90px;
   }
   .mini-input.narrow{ width:64px; }
+  select.mini-input{ width:auto; min-width:150px; padding-right:10px; }
   .hint{ font-size:11px; color:var(--text-faint); }
 
   .audience-bar{
@@ -993,7 +994,7 @@
               <div class="field-row">
                 <span class="field-pill">시점 및 조건</span>
                 <div class="field-control">
-                  <select class="mini-input" id="popupTimingSelect" style="width:230px;" onchange="onTimingChange()">
+                  <select class="mini-input" id="popupTimingSelect" style="min-width:210px;" onchange="onTimingChange()">
                     <option value="immediate">즉시 노출</option>
                     <option value="signup_elapsed">회원가입 후 경과일 기준</option>
                     <option value="last_visit_elapsed">마지막 방문 후 경과일 기준</option>
