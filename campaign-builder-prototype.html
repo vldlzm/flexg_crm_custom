@@ -453,23 +453,6 @@
   .inline-options{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
   .inline-options label{ display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; white-space:nowrap; }
 
-  .tag-checks{ display:flex; flex-wrap:wrap; gap:8px; }
-  .position-tag{
-    border:1.5px solid var(--border);
-    border-radius:999px;
-    padding:7px 14px;
-    font-size:12.5px;
-    cursor:pointer;
-    background:#fff;
-    transition:border-color .15s, background .15s, color .15s;
-  }
-  .position-tag:has(input:checked){
-    border-color:var(--accent);
-    background:#eef2ff;
-    color:var(--accent);
-    font-weight:700;
-  }
-  .position-tag input{ display:none; }
 
   .text-input, .url-input{
     border:1px solid var(--border);
@@ -1019,12 +1002,12 @@
               <div class="field-row">
                 <span class="field-pill">노출 위치</span>
                 <div class="field-control">
-                  <div class="tag-checks">
-                    <label class="position-tag"><input type="checkbox" value="처음 방문한 페이지" onchange="updatePreview()">처음 방문한 페이지</label>
-                    <label class="position-tag"><input type="checkbox" value="메인" onchange="updatePreview()">메인</label>
-                    <label class="position-tag"><input type="checkbox" value="상품 목록" onchange="updatePreview()">상품 목록</label>
-                    <label class="position-tag"><input type="checkbox" value="상품 상세" onchange="updatePreview()">상품 상세</label>
-                  </div>
+                  <select class="mini-input" id="popupPositionSelect" multiple style="min-width:220px; height:104px;" onchange="updatePreview()">
+                    <option value="처음 방문한 페이지">처음 방문한 페이지</option>
+                    <option value="메인">메인</option>
+                    <option value="상품 목록">상품 목록</option>
+                    <option value="상품 상세">상품 상세</option>
+                  </select>
                 </div>
               </div>
 
@@ -1321,14 +1304,14 @@
       badge.style.display = 'none';
     }
 
-    const checked = Array.from(document.querySelectorAll('.position-tag input:checked')).map(cb=>cb.value);
+    const checked = Array.from(document.getElementById('popupPositionSelect').selectedOptions).map(o=>o.value);
     const posWrap = document.getElementById('previewPositions');
     posWrap.innerHTML = checked.map(p=>'<span class="pos-pill">'+p+'</span>').join('');
   }
 
   function confirmStep4(){
     const timingText = buildTimingSummary();
-    const positions = Array.from(document.querySelectorAll('.position-tag input:checked')).map(cb=>cb.value);
+    const positions = Array.from(document.getElementById('popupPositionSelect').selectedOptions).map(o=>o.value);
     const posText = positions.length ? positions.join(', ') : '위치 미설정';
     completeStep(4, timingText + ' · ' + posText);
   }
