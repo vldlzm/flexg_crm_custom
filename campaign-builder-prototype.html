@@ -1270,24 +1270,6 @@
     updatePreview();
   }
 
-  function resetDiscountForm(){
-    document.getElementById('discountEnabledToggle').checked = true;
-    onDiscountEnabledChange();
-    document.querySelector('input[name=discountType][value="CRM"]').checked = true;
-    document.getElementById('discountCodeInput').value = '';
-    document.getElementById('discountCodeCount').textContent = '0/16';
-    document.querySelector('input[name=discountKind][value="amount"]').checked = true;
-    document.getElementById('discountAmountInput').value = '';
-    document.getElementById('discountPercentInput').value = '';
-    document.getElementById('discountPercentInput').disabled = true;
-    document.getElementById('discountMaxInput').value = '0';
-    document.getElementById('discountMaxInput').disabled = true;
-    document.getElementById('minOrderInput').value = '0';
-    document.querySelector('input[name=discountEnv][value="전체"]').checked = true;
-    document.getElementById('discountMemo').value = '';
-    updateStep3Preview();
-  }
-
   function confirmStep3(){
     updateStep3Preview();
     const enabled = document.getElementById('discountEnabledToggle').checked;
@@ -1301,7 +1283,6 @@
   }
 
   function skipStep3(){
-    resetDiscountForm();
     document.getElementById('discountEnabledToggle').checked = false;
     onDiscountEnabledChange();
     completeStep(3, '혜택 미설정');
