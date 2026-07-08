@@ -166,56 +166,79 @@
     line-height:1.6;
   }
 
-  /* ===== List toolbar (filter tabs + search) ===== */
-  .list-toolbar{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:16px;
-    flex-wrap:wrap;
-    margin-bottom:14px;
+  /* ===== Search panel ===== */
+  .search-panel{
+    background:var(--panel-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px 24px;
+    margin-bottom:16px;
   }
-  .search-box{
+  .search-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px 40px;
+  }
+  .search-field{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .search-field-label{
+    width:84px;
+    flex-shrink:0;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-muted);
+  }
+  .search-field-control{
+    flex:1;
     display:flex;
     align-items:center;
     gap:8px;
+  }
+  .search-input,
+  .search-select,
+  .date-range input[type="date"]{
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:13px;
+    color:var(--text);
+    outline:none;
+    background:#fff;
+  }
+  .search-input{ width:100%; }
+  .search-select{ min-width:120px; cursor:pointer; }
+  .date-range{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1;
+  }
+  .date-range input[type="date"]{ flex:1; min-width:0; }
+  .date-range span{ color:var(--text-faint); }
+  .search-actions{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+  .btn-light{
     background:#fff;
     border:1px solid var(--border);
-    border-radius:999px;
-    padding:7px 14px;
-    min-width:300px;
-  }
-  .search-box select{
-    border:none;
-    outline:none;
-    background:transparent;
-    font-size:13px;
-    font-weight:600;
-    color:var(--text-muted);
-    cursor:pointer;
-  }
-  .search-divider{
-    width:1px;
-    height:16px;
-    background:var(--border);
-  }
-  .search-icon{ font-size:12.5px; }
-  .search-box input{
-    border:none;
-    outline:none;
-    font-size:13px;
-    flex:1;
     color:var(--text);
-    background:transparent;
   }
-  .search-box input::placeholder{ color:var(--text-faint); }
+  .btn-light:hover{ background:#f3f4f6; }
 
   /* ===== Channel filter tabs ===== */
   .filter-tabs{
     display:flex;
     flex-wrap:wrap;
     gap:6px;
-    margin-bottom:0;
+    margin-bottom:14px;
   }
   .filter-tab{
     border:1px solid var(--border);
@@ -362,26 +385,54 @@
       <!-- ===== List state ===== -->
       <div id="listState" style="display:none">
 
-        <div class="list-toolbar">
-          <div class="filter-tabs" id="channelFilterTabs">
-            <button class="filter-tab active" data-channel="all" onclick="filterByChannel('all', this)">전체</button>
-            <button class="filter-tab" data-channel="popup" onclick="filterByChannel('popup', this)">🖼️ 콘텐츠 팝업</button>
-            <button class="filter-tab" data-channel="apppush" onclick="filterByChannel('apppush', this)">🔔 APP푸시</button>
-            <button class="filter-tab" data-channel="alimtalk" onclick="filterByChannel('alimtalk', this)">💬 알림톡</button>
-            <button class="filter-tab" data-channel="friendtalk" onclick="filterByChannel('friendtalk', this)">📨 브랜드메시지(친구톡)</button>
-            <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
+        <div class="search-panel">
+          <div class="search-grid">
+            <div class="search-field">
+              <span class="search-field-label">캠페인명</span>
+              <div class="search-field-control">
+                <input type="text" id="searchName" class="search-input" placeholder="캠페인명을 입력하세요" oninput="applyFilters()">
+              </div>
+            </div>
+            <div class="search-field">
+              <span class="search-field-label">진행 여부</span>
+              <div class="search-field-control">
+                <select id="searchStatus" class="search-select" onchange="applyFilters()">
+                  <option value="all">전체</option>
+                  <option value="running">진행</option>
+                  <option value="ended">종료</option>
+                </select>
+              </div>
+            </div>
+            <div class="search-field">
+              <span class="search-field-label">캠페인 기간</span>
+              <div class="search-field-control date-range">
+                <input type="date" id="searchPeriodStart" onchange="applyFilters()">
+                <span>~</span>
+                <input type="date" id="searchPeriodEnd" onchange="applyFilters()">
+              </div>
+            </div>
+            <div class="search-field">
+              <span class="search-field-label">생성일</span>
+              <div class="search-field-control date-range">
+                <input type="date" id="searchCreatedStart" onchange="applyFilters()">
+                <span>~</span>
+                <input type="date" id="searchCreatedEnd" onchange="applyFilters()">
+              </div>
+            </div>
           </div>
-          <div class="search-box">
-            <select id="searchFieldSelect" onchange="onSearchFieldChange()">
-              <option value="name">캠페인명</option>
-              <option value="period">캠페인 기간</option>
-              <option value="created">생성일</option>
-              <option value="status">진행 여부</option>
-            </select>
-            <span class="search-divider"></span>
-            <span class="search-icon">🔍</span>
-            <input type="text" id="campaignSearchInput" placeholder="캠페인명 검색" oninput="applyFilters()">
+          <div class="search-actions">
+            <button class="btn btn-light" onclick="resetSearch()">초기화</button>
+            <button class="btn btn-accent" onclick="applyFilters()">검색</button>
           </div>
+        </div>
+
+        <div class="filter-tabs" id="channelFilterTabs">
+          <button class="filter-tab active" data-channel="all" onclick="filterByChannel('all', this)">전체</button>
+          <button class="filter-tab" data-channel="popup" onclick="filterByChannel('popup', this)">🖼️ 콘텐츠 팝업</button>
+          <button class="filter-tab" data-channel="apppush" onclick="filterByChannel('apppush', this)">🔔 APP푸시</button>
+          <button class="filter-tab" data-channel="alimtalk" onclick="filterByChannel('alimtalk', this)">💬 알림톡</button>
+          <button class="filter-tab" data-channel="friendtalk" onclick="filterByChannel('friendtalk', this)">📨 브랜드메시지(친구톡)</button>
+          <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
         </div>
 
         <div class="table-panel">
@@ -399,7 +450,7 @@
               </tr>
             </thead>
             <tbody id="campaignTableBody">
-              <tr data-channel="popup">
+              <tr data-channel="popup" data-status="running" data-period-start="2026-07-01" data-period-end="2026-07-31" data-created="2026-06-28">
                 <td class="no-cell">4</td>
                 <td class="campaign-cell">
                   <button class="campaign-link">여름 세일 웰컴 팝업</button>
@@ -416,7 +467,7 @@
                   </span>
                 </td>
               </tr>
-              <tr data-channel="alimtalk">
+              <tr data-channel="alimtalk" data-status="running" data-period-start="2026-06-15" data-period-end="" data-created="2026-06-14">
                 <td class="no-cell">3</td>
                 <td class="campaign-cell">
                   <button class="campaign-link">장바구니 리마인드 알림톡</button>
@@ -433,7 +484,7 @@
                   </span>
                 </td>
               </tr>
-              <tr data-channel="apppush">
+              <tr data-channel="apppush" data-status="ended" data-period-start="2026-08-01" data-period-end="2026-08-31" data-created="2026-07-05">
                 <td class="no-cell">2</td>
                 <td class="campaign-cell">
                   <button class="campaign-link">신규 회원 첫 구매 혜택</button>
@@ -450,7 +501,7 @@
                   </span>
                 </td>
               </tr>
-              <tr data-channel="friendtalk">
+              <tr data-channel="friendtalk" data-status="ended" data-period-start="2026-03-01" data-period-end="2026-03-31" data-created="2026-02-25">
                 <td class="no-cell">1</td>
                 <td class="campaign-cell">
                   <button class="campaign-link">봄맞이 브랜드메시지</button>
@@ -497,35 +548,46 @@
     applyFilters();
   }
 
-  const searchFieldSelectors = {
-    name: '.campaign-link',
-    period: '.period-cell',
-    created: '.created-cell',
-    status: '.status-pill .is-active'
-  };
-  const searchFieldPlaceholders = {
-    name: '캠페인명 검색',
-    period: '캠페인 기간 검색 (예: 2026.07)',
-    created: '생성일 검색 (예: 2026.06.28)',
-    status: '진행 여부 검색 (진행 / 종료)'
-  };
-
-  function onSearchFieldChange(){
-    const field = document.getElementById('searchFieldSelect').value;
-    document.getElementById('campaignSearchInput').placeholder = searchFieldPlaceholders[field];
+  function resetSearch(){
+    document.getElementById('searchName').value = '';
+    document.getElementById('searchStatus').value = 'all';
+    document.getElementById('searchPeriodStart').value = '';
+    document.getElementById('searchPeriodEnd').value = '';
+    document.getElementById('searchCreatedStart').value = '';
+    document.getElementById('searchCreatedEnd').value = '';
     applyFilters();
   }
 
   function applyFilters(){
-    const field = document.getElementById('searchFieldSelect').value;
-    const query = document.getElementById('campaignSearchInput').value.trim().toLowerCase();
+    const nameQuery = document.getElementById('searchName').value.trim().toLowerCase();
+    const statusFilter = document.getElementById('searchStatus').value;
+    const periodStart = document.getElementById('searchPeriodStart').value;
+    const periodEnd = document.getElementById('searchPeriodEnd').value;
+    const createdStart = document.getElementById('searchCreatedStart').value;
+    const createdEnd = document.getElementById('searchCreatedEnd').value;
+
     const rows = document.querySelectorAll('#campaignTableBody tr');
     let visibleCount = 0;
     rows.forEach(function(row){
       const channelMatch = currentChannel === 'all' || row.dataset.channel === currentChannel;
-      const fieldText = row.querySelector(searchFieldSelectors[field]).textContent.toLowerCase();
-      const searchMatch = query === '' || fieldText.includes(query);
-      const match = channelMatch && searchMatch;
+
+      const name = row.querySelector('.campaign-link').textContent.toLowerCase();
+      const nameMatch = nameQuery === '' || name.includes(nameQuery);
+
+      const statusMatch = statusFilter === 'all' || row.dataset.status === statusFilter;
+
+      const rowPeriodStart = row.dataset.periodStart;
+      const rowPeriodEnd = row.dataset.periodEnd;
+      let periodMatch = true;
+      if(periodStart) periodMatch = periodMatch && (rowPeriodEnd === '' || rowPeriodEnd >= periodStart);
+      if(periodEnd) periodMatch = periodMatch && (rowPeriodStart <= periodEnd);
+
+      const rowCreated = row.dataset.created;
+      let createdMatch = true;
+      if(createdStart) createdMatch = createdMatch && rowCreated >= createdStart;
+      if(createdEnd) createdMatch = createdMatch && rowCreated <= createdEnd;
+
+      const match = channelMatch && nameMatch && statusMatch && periodMatch && createdMatch;
       row.style.display = match ? '' : 'none';
       if(match) visibleCount++;
     });
