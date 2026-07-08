@@ -374,6 +374,57 @@
         <button id="toggleListBtn" onclick="setState('list')">캠페인 있음</button>
       </div>
 
+      <!-- Search & channel filters stay visible whether or not campaigns exist -->
+      <div class="search-panel">
+        <div class="search-grid">
+          <div class="search-field">
+            <span class="search-field-label">캠페인명</span>
+            <div class="search-field-control">
+              <input type="text" id="searchName" class="search-input" placeholder="캠페인명을 입력하세요" oninput="applyFilters()">
+            </div>
+          </div>
+          <div class="search-field">
+            <span class="search-field-label">진행 여부</span>
+            <div class="search-field-control">
+              <select id="searchStatus" class="search-select" onchange="applyFilters()">
+                <option value="all">전체</option>
+                <option value="running">진행</option>
+                <option value="ended">종료</option>
+              </select>
+            </div>
+          </div>
+          <div class="search-field">
+            <span class="search-field-label">캠페인 기간</span>
+            <div class="search-field-control date-range">
+              <input type="date" id="searchPeriodStart" onchange="applyFilters()">
+              <span>~</span>
+              <input type="date" id="searchPeriodEnd" onchange="applyFilters()">
+            </div>
+          </div>
+          <div class="search-field">
+            <span class="search-field-label">생성일</span>
+            <div class="search-field-control date-range">
+              <input type="date" id="searchCreatedStart" onchange="applyFilters()">
+              <span>~</span>
+              <input type="date" id="searchCreatedEnd" onchange="applyFilters()">
+            </div>
+          </div>
+        </div>
+        <div class="search-actions">
+          <button class="btn btn-light" onclick="resetSearch()">초기화</button>
+          <button class="btn btn-accent" onclick="applyFilters()">검색</button>
+        </div>
+      </div>
+
+      <div class="filter-tabs" id="channelFilterTabs">
+        <button class="filter-tab active" data-channel="all" onclick="filterByChannel('all', this)">전체</button>
+        <button class="filter-tab" data-channel="popup" onclick="filterByChannel('popup', this)">🖼️ 콘텐츠 팝업</button>
+        <button class="filter-tab" data-channel="apppush" onclick="filterByChannel('apppush', this)">🔔 APP푸시</button>
+        <button class="filter-tab" data-channel="alimtalk" onclick="filterByChannel('alimtalk', this)">💬 알림톡</button>
+        <button class="filter-tab" data-channel="friendtalk" onclick="filterByChannel('friendtalk', this)">📨 브랜드메시지(친구톡)</button>
+        <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
+      </div>
+
       <!-- ===== Empty state ===== -->
       <div class="empty-state" id="emptyState">
         <div class="empty-icon">📭</div>
@@ -383,60 +434,8 @@
       </div>
 
       <!-- ===== List state ===== -->
-      <div id="listState" style="display:none">
-
-        <div class="search-panel">
-          <div class="search-grid">
-            <div class="search-field">
-              <span class="search-field-label">캠페인명</span>
-              <div class="search-field-control">
-                <input type="text" id="searchName" class="search-input" placeholder="캠페인명을 입력하세요" oninput="applyFilters()">
-              </div>
-            </div>
-            <div class="search-field">
-              <span class="search-field-label">진행 여부</span>
-              <div class="search-field-control">
-                <select id="searchStatus" class="search-select" onchange="applyFilters()">
-                  <option value="all">전체</option>
-                  <option value="running">진행</option>
-                  <option value="ended">종료</option>
-                </select>
-              </div>
-            </div>
-            <div class="search-field">
-              <span class="search-field-label">캠페인 기간</span>
-              <div class="search-field-control date-range">
-                <input type="date" id="searchPeriodStart" onchange="applyFilters()">
-                <span>~</span>
-                <input type="date" id="searchPeriodEnd" onchange="applyFilters()">
-              </div>
-            </div>
-            <div class="search-field">
-              <span class="search-field-label">생성일</span>
-              <div class="search-field-control date-range">
-                <input type="date" id="searchCreatedStart" onchange="applyFilters()">
-                <span>~</span>
-                <input type="date" id="searchCreatedEnd" onchange="applyFilters()">
-              </div>
-            </div>
-          </div>
-          <div class="search-actions">
-            <button class="btn btn-light" onclick="resetSearch()">초기화</button>
-            <button class="btn btn-accent" onclick="applyFilters()">검색</button>
-          </div>
-        </div>
-
-        <div class="filter-tabs" id="channelFilterTabs">
-          <button class="filter-tab active" data-channel="all" onclick="filterByChannel('all', this)">전체</button>
-          <button class="filter-tab" data-channel="popup" onclick="filterByChannel('popup', this)">🖼️ 콘텐츠 팝업</button>
-          <button class="filter-tab" data-channel="apppush" onclick="filterByChannel('apppush', this)">🔔 APP푸시</button>
-          <button class="filter-tab" data-channel="alimtalk" onclick="filterByChannel('alimtalk', this)">💬 알림톡</button>
-          <button class="filter-tab" data-channel="friendtalk" onclick="filterByChannel('friendtalk', this)">📨 브랜드메시지(친구톡)</button>
-          <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
-        </div>
-
-        <div class="table-panel">
-          <table>
+      <div class="table-panel" id="listState" style="display:none">
+        <table>
             <thead>
               <tr>
                 <th>No</th>
@@ -523,7 +522,6 @@
           <div class="empty-filter-row" id="emptyFilterRow" style="display:none; padding:60px 20px; text-align:center; color:var(--text-muted);">
             조건에 맞는 캠페인이 없습니다.
           </div>
-        </div>
       </div>
 
     </div>
