@@ -1098,10 +1098,10 @@
               <div class="field-row">
                 <span class="field-pill">클릭 액션</span>
                 <div class="field-control">
-                  <div class="inline-options">
-                    <label><input type="radio" name="clickAction" value="close" checked onchange="onClickActionChange()"> 팝업 닫힘(버튼 클릭 시 할인코드 자동 적용)</label>
-                    <label><input type="radio" name="clickAction" value="landing" onchange="onClickActionChange()"> 랜딩 URL로 이동</label>
-                  </div>
+                  <select class="mini-input" id="clickActionSelect" style="min-width:280px;" onchange="onClickActionChange()">
+                    <option value="close">팝업 닫힘(버튼 클릭 시 할인코드 자동 적용)</option>
+                    <option value="landing">랜딩 URL로 이동</option>
+                  </select>
                   <div id="landingUrlField" style="display:none">
                     <input type="text" class="url-input" id="landingUrlInput" placeholder="https://" oninput="updatePreview()">
                   </div>
@@ -1414,7 +1414,7 @@
   }
 
   function onClickActionChange(){
-    const action = document.querySelector('input[name=clickAction]:checked').value;
+    const action = document.getElementById('clickActionSelect').value;
     document.getElementById('landingUrlField').style.display = action === 'landing' ? 'block' : 'none';
     updatePreview();
   }
@@ -1459,7 +1459,7 @@
     document.getElementById('cartAbandonUnit').value = 'hour';
     document.getElementById('visitCountInput').value = '3';
     document.getElementById('popupPositionSelect').selectedIndex = 0;
-    document.querySelector('input[name=clickAction][value="close"]').checked = true;
+    document.getElementById('clickActionSelect').value = 'close';
     document.getElementById('landingUrlField').style.display = 'none';
     document.getElementById('landingUrlInput').value = '';
     document.getElementById('popupHeadline').value = '';
