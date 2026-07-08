@@ -166,12 +166,42 @@
     line-height:1.6;
   }
 
+  /* ===== List toolbar (filter tabs + search) ===== */
+  .list-toolbar{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .search-box{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:7px 14px;
+    min-width:220px;
+  }
+  .search-icon{ font-size:12.5px; }
+  .search-box input{
+    border:none;
+    outline:none;
+    font-size:13px;
+    flex:1;
+    color:var(--text);
+    background:transparent;
+  }
+  .search-box input::placeholder{ color:var(--text-faint); }
+
   /* ===== Channel filter tabs ===== */
   .filter-tabs{
     display:flex;
     flex-wrap:wrap;
     gap:6px;
-    margin-bottom:14px;
+    margin-bottom:0;
   }
   .filter-tab{
     border:1px solid var(--border);
@@ -318,13 +348,19 @@
       <!-- ===== List state ===== -->
       <div id="listState" style="display:none">
 
-        <div class="filter-tabs" id="channelFilterTabs">
-          <button class="filter-tab active" data-channel="all" onclick="filterByChannel('all', this)">전체</button>
-          <button class="filter-tab" data-channel="popup" onclick="filterByChannel('popup', this)">🖼️ 콘텐츠 팝업</button>
-          <button class="filter-tab" data-channel="apppush" onclick="filterByChannel('apppush', this)">🔔 APP푸시</button>
-          <button class="filter-tab" data-channel="alimtalk" onclick="filterByChannel('alimtalk', this)">💬 알림톡</button>
-          <button class="filter-tab" data-channel="friendtalk" onclick="filterByChannel('friendtalk', this)">📨 브랜드메시지(친구톡)</button>
-          <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
+        <div class="list-toolbar">
+          <div class="filter-tabs" id="channelFilterTabs">
+            <button class="filter-tab active" data-channel="all" onclick="filterByChannel('all', this)">전체</button>
+            <button class="filter-tab" data-channel="popup" onclick="filterByChannel('popup', this)">🖼️ 콘텐츠 팝업</button>
+            <button class="filter-tab" data-channel="apppush" onclick="filterByChannel('apppush', this)">🔔 APP푸시</button>
+            <button class="filter-tab" data-channel="alimtalk" onclick="filterByChannel('alimtalk', this)">💬 알림톡</button>
+            <button class="filter-tab" data-channel="friendtalk" onclick="filterByChannel('friendtalk', this)">📨 브랜드메시지(친구톡)</button>
+            <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
+          </div>
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="campaignSearchInput" placeholder="캠페인명 검색" oninput="applyFilters()">
+          </div>
         </div>
 
         <div class="table-panel">
@@ -413,7 +449,7 @@
             </tbody>
           </table>
           <div class="empty-filter-row" id="emptyFilterRow" style="display:none; padding:60px 20px; text-align:center; color:var(--text-muted);">
-            선택한 채널의 캠페인이 없습니다.
+            조건에 맞는 캠페인이 없습니다.
           </div>
         </div>
       </div>
@@ -430,14 +466,25 @@
     document.getElementById('toggleListBtn').classList.toggle('active', state === 'list');
   }
 
+  let currentChannel = 'all';
+
   function filterByChannel(channel, btn){
+    currentChannel = channel;
     document.querySelectorAll('#channelFilterTabs .filter-tab').forEach(function(tab){
       tab.classList.toggle('active', tab === btn);
     });
+    applyFilters();
+  }
+
+  function applyFilters(){
+    const query = document.getElementById('campaignSearchInput').value.trim().toLowerCase();
     const rows = document.querySelectorAll('#campaignTableBody tr');
     let visibleCount = 0;
     rows.forEach(function(row){
-      const match = channel === 'all' || row.dataset.channel === channel;
+      const channelMatch = currentChannel === 'all' || row.dataset.channel === currentChannel;
+      const name = row.querySelector('.campaign-link').textContent.toLowerCase();
+      const searchMatch = query === '' || name.includes(query);
+      const match = channelMatch && searchMatch;
       row.style.display = match ? '' : 'none';
       if(match) visibleCount++;
     });
