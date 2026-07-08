@@ -1075,19 +1075,6 @@
               </div>
 
               <div class="field-row">
-                <span class="field-pill">클릭 액션</span>
-                <div class="field-control">
-                  <div class="inline-options">
-                    <label><input type="radio" name="clickAction" value="close" checked onchange="onClickActionChange()"> 팝업 닫힘(버튼 클릭 시 할인코드 자동 적용)</label>
-                    <label><input type="radio" name="clickAction" value="landing" onchange="onClickActionChange()"> 랜딩 URL로 이동</label>
-                  </div>
-                  <div id="landingUrlField" style="display:none">
-                    <input type="text" class="url-input" id="landingUrlInput" placeholder="https://" oninput="updatePreview()">
-                  </div>
-                </div>
-              </div>
-
-              <div class="field-row">
                 <span class="field-pill">비용</span>
                 <div class="field-control">
                   <div class="static-value">무료</div>
@@ -1105,6 +1092,19 @@
                 <span class="field-pill">버튼 문구</span>
                 <div class="field-control">
                   <input type="text" class="text-input" id="popupButtonText" placeholder="버튼 문구를 입력해주세요" oninput="updatePreview()">
+                </div>
+              </div>
+
+              <div class="field-row">
+                <span class="field-pill">클릭 액션</span>
+                <div class="field-control">
+                  <div class="inline-options">
+                    <label><input type="radio" name="clickAction" value="close" checked onchange="onClickActionChange()"> 팝업 닫힘(버튼 클릭 시 할인코드 자동 적용)</label>
+                    <label><input type="radio" name="clickAction" value="landing" onchange="onClickActionChange()"> 랜딩 URL로 이동</label>
+                  </div>
+                  <div id="landingUrlField" style="display:none">
+                    <input type="text" class="url-input" id="landingUrlInput" placeholder="https://" oninput="updatePreview()">
+                  </div>
                 </div>
               </div>
 
