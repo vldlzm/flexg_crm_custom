@@ -178,12 +178,26 @@
   .search-box{
     display:flex;
     align-items:center;
-    gap:6px;
+    gap:8px;
     background:#fff;
     border:1px solid var(--border);
     border-radius:999px;
     padding:7px 14px;
-    min-width:220px;
+    min-width:300px;
+  }
+  .search-box select{
+    border:none;
+    outline:none;
+    background:transparent;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
+  .search-divider{
+    width:1px;
+    height:16px;
+    background:var(--border);
   }
   .search-icon{ font-size:12.5px; }
   .search-box input{
@@ -358,6 +372,13 @@
             <button class="filter-tab" data-channel="lms" onclick="filterByChannel('lms', this)">✉️ LMS</button>
           </div>
           <div class="search-box">
+            <select id="searchFieldSelect" onchange="onSearchFieldChange()">
+              <option value="name">캠페인명</option>
+              <option value="period">캠페인 기간</option>
+              <option value="created">생성일</option>
+              <option value="status">진행 여부</option>
+            </select>
+            <span class="search-divider"></span>
             <span class="search-icon">🔍</span>
             <input type="text" id="campaignSearchInput" placeholder="캠페인명 검색" oninput="applyFilters()">
           </div>
@@ -385,7 +406,7 @@
                   <div class="campaign-channel"><span class="channel-tag">🖼️ 콘텐츠 팝업</span></div>
                 </td>
                 <td class="period-cell"><span class="period-label">시작 :</span> 2026.07.01<br><span class="period-label">종료 :</span> 2026.07.31</td>
-                <td>2026.06.28 10:12:04</td>
+                <td class="created-cell">2026.06.28 10:12:04</td>
                 <td><button class="action-btn">통계 ›</button></td>
                 <td><button class="action-btn">테스트 발행 ›</button></td>
                 <td><button class="action-btn">발송 내역 ›</button></td>
@@ -402,7 +423,7 @@
                   <div class="campaign-channel"><span class="channel-tag">💬 알림톡</span></div>
                 </td>
                 <td class="period-cell"><span class="period-label">시작 :</span> 2026.06.15<br><span class="period-label">종료 :</span> 상시</td>
-                <td>2026.06.14 09:30:51</td>
+                <td class="created-cell">2026.06.14 09:30:51</td>
                 <td><button class="action-btn">통계 ›</button></td>
                 <td><button class="action-btn">테스트 발행 ›</button></td>
                 <td><button class="action-btn">발송 내역 ›</button></td>
@@ -419,7 +440,7 @@
                   <div class="campaign-channel"><span class="channel-tag">🔔 APP푸시</span></div>
                 </td>
                 <td class="period-cell"><span class="period-label">시작 :</span> 2026.08.01<br><span class="period-label">종료 :</span> 2026.08.31</td>
-                <td>2026.07.05 16:44:19</td>
+                <td class="created-cell">2026.07.05 16:44:19</td>
                 <td><button class="action-btn">통계 ›</button></td>
                 <td><button class="action-btn">테스트 발행 ›</button></td>
                 <td><button class="action-btn">발송 내역 ›</button></td>
@@ -436,7 +457,7 @@
                   <div class="campaign-channel"><span class="channel-tag">📨 브랜드메시지(친구톡)</span></div>
                 </td>
                 <td class="period-cell"><span class="period-label">시작 :</span> 2026.03.01<br><span class="period-label">종료 :</span> 2026.03.31</td>
-                <td>2026.02.25 14:07:21</td>
+                <td class="created-cell">2026.02.25 14:07:21</td>
                 <td><button class="action-btn">통계 ›</button></td>
                 <td><button class="action-btn">테스트 발행 ›</button></td>
                 <td><button class="action-btn">발송 내역 ›</button></td>
@@ -476,14 +497,34 @@
     applyFilters();
   }
 
+  const searchFieldSelectors = {
+    name: '.campaign-link',
+    period: '.period-cell',
+    created: '.created-cell',
+    status: '.status-pill .is-active'
+  };
+  const searchFieldPlaceholders = {
+    name: '캠페인명 검색',
+    period: '캠페인 기간 검색 (예: 2026.07)',
+    created: '생성일 검색 (예: 2026.06.28)',
+    status: '진행 여부 검색 (진행 / 종료)'
+  };
+
+  function onSearchFieldChange(){
+    const field = document.getElementById('searchFieldSelect').value;
+    document.getElementById('campaignSearchInput').placeholder = searchFieldPlaceholders[field];
+    applyFilters();
+  }
+
   function applyFilters(){
+    const field = document.getElementById('searchFieldSelect').value;
     const query = document.getElementById('campaignSearchInput').value.trim().toLowerCase();
     const rows = document.querySelectorAll('#campaignTableBody tr');
     let visibleCount = 0;
     rows.forEach(function(row){
       const channelMatch = currentChannel === 'all' || row.dataset.channel === currentChannel;
-      const name = row.querySelector('.campaign-link').textContent.toLowerCase();
-      const searchMatch = query === '' || name.includes(query);
+      const fieldText = row.querySelector(searchFieldSelectors[field]).textContent.toLowerCase();
+      const searchMatch = query === '' || fieldText.includes(query);
       const match = channelMatch && searchMatch;
       row.style.display = match ? '' : 'none';
       if(match) visibleCount++;
